@@ -1,0 +1,150 @@
+#!/bin/bash
+
+if [ `whoami` != "root" ]
+then
+        echo "You must have root privilegies"
+        exit 1
+fi
+
+HOMEDIR="/home/www"
+LOGDIR="/var/log/apache2"
+OWNER="overcoder.overcoder"
+
+if [ $# -eq 1 -a  $1=="install" ];
+then
+    cd "`dirname $0`/../home"
+    ln -s "`pwd`" "$HOMEDIR"
+    chown -R "$OWNER" "$HOMEDIR"
+    echo "Installed"
+    exit 0;
+fi
+
+if  test $# -lt 2
+then
+    echo "Error:"
+    [ -z "$1" ] && ( echo "     No operation set" )
+    [ -z "$2" ] && ( echo "     No domain name" )
+    echo ""
+    echo "Usage: web-host Operation Domainname"
+    echo "  Operations:"
+    echo "      install - install"
+    echo "      create - "
+    echo "      set - "
+    echo "      delete - "
+    echo "      log - "
+    exit 1
+fi
+
+OPERATION=$1
+PROJECTNAME=$2
+OPTIONS=$3
+SERVERNAME="$PROJECTNAME.loc"
+AVAILABLEDIR="/etc/apache2/sites-available"
+DOMAINCFG="$PROJECTNAME.conf"
+ENABLEDDIR="/etc/apache2/sites-enabled"
+DBNAME="${PROJECTNAME//./_}_db"
+WEBDIR="$HOMEDIR/$PROJECTNAME"
+
+createWebDir (){
+    if [ -f "$AVAILABLEDIR/$DOMAINCFG" ]; then
+        echo "Virtual host $SERVERNAME already exists.";
+        exit 0;
+    fi
+    mkdir -p $WEBDIR/public
+    echo "<?php phpinfo();">$WEBDIR/public/index.php
+    #chown -R $OWNER $WEBDIR
+    chmod -R 777 $WEBDIR
+}
+
+createDb (){
+    echo "Creating MySQL DB $DBNAME"
+    echo create database if not exists $DBNAME default character set utf8 collate utf8_general_ci\; |mysql -u root
+
+}
+
+dropDb (){
+    echo "Dropping MySQL DB $DBNAME"
+    echo drop database $DBNAME\; |mysql -u root
+}
+
+createVirualHost (){
+    mkdir -p $LOGDIR
+    echo "Config creating"
+VIRT_HOST=$(cat <<VIRT_HOST
+<VirtualHost *:80>
+    ServerName $SERVERNAME
+    ServerAlias *.$SERVERNAME $SERVERNAME
+
+    DocumentRoot $WEBDIR/public/
+
+    ScriptAlias /cgi-bin $WEBDIR/public
+
+    SetEnv APPLICATION_ENV "development"
+
+    <Directory $WEBDIR/public>
+        DirectoryIndex index.php
+        AllowOverride All
+        Order allow,deny
+        Allow from all
+    </Directory>
+
+    ErrorLog $LOGDIR/$SERVERNAME.errors
+    CustomLog $LOGDIR/$SERVERNAME.access common
+</VirtualHost>
+VIRT_HOST
+)
+    echo "$VIRT_HOST">"$AVAILABLEDIR/$DOMAINCFG"
+    ln -s "$AVAILABLEDIR/$DOMAINCFG" "$ENABLEDDIR/$DOMAINCFG"
+    HOST=`cat /etc/hosts`
+    echo "127.0.0.1	www.$SERVERNAME $SERVERNAME">/etc/hosts
+    echo "$HOST">>/etc/hosts
+}
+
+removeVirtualHost (){
+    if [ ! -f "$AVAILABLEDIR/$DOMAINCFG" ]; then
+        echo "Virtual host $SERVERNAME does not exists.";
+        exit 0;
+    fi
+    a2dissite $PROJECTNAME
+    rm $DOMAINCFG
+    rm -r $WEBDIR
+    sed "/www.$SERVERNAME $SERVERNAME/d" /etc/hosts > /tmp/tmp-hosts;
+    mv /tmp/tmp-hosts /etc/hosts
+}
+
+if [ ! -d $HOMEDIR ];
+then
+    echo "web-host not installed"
+    exit 1;
+fi
+
+if [ $OPERATION == "create" ]
+then
+    createWebDir
+    createDb
+    createVirualHost
+    echo "$SERVERNAME successfully created"
+fi
+
+if [ $OPERATION == "set" ]
+then
+    createVirualHost
+    echo "$SERVERNAME successfully seted"
+fi
+
+if [ $OPERATION == "log" ]
+then
+    cat "$LOGDIR/$SERVERNAME.errors"
+    cat "$LOGDIR/$SERVERNAME.custom"
+fi
+
+if [ $OPERATION == "delete" ]
+then
+    removeVirtualHost
+    dropDb
+    echo "$SERVERNAME successfully seted"
+fi
+
+/etc/init.d/apache2 restart
+
+exit 0
