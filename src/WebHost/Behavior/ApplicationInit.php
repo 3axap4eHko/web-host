@@ -6,23 +6,51 @@ use Phalcon\DI\InjectionAwareInterface;
 use Phalcon\Mvc\Application as PhApplication;
 use Phalcon\DI\FactoryDefault as DI;
 use Phalcon\Config;
+use WebHost\Module\Manager;
 
 trait ApplicationInit
 {
+
+    public function getConfig($configDir, $configType, $configExt = '.php')
+    {
+        $configFilename = $configDir . DIRECTORY_SEPARATOR . $configType . $configExt;
+        if (!file_exists($configFilename))
+        {
+            return new Config();
+        }
+        try
+        {
+            return include $configFilename;
+        }
+        catch (\Exception $e)
+        {
+            throw new \Exception(sprintf('Error including configuration file "%s"', $configFilename));
+        }
+    }
+
+
     public function init($configDir)
     {
+        $initOrder = [
+            'modules',
+            'loader',
+            'services'
+        ];
+
+
         define('APP_MODE', strpos(strtolower(PHP_SAPI), 'cli')===false ? 'application' : 'console');
         $configDir = rtrim($configDir,'\\/');
         $di = $this->getDI();
         /** @var Config $config */
-        $di->setShared('config', $config = include $configDir . '/common.php');
+        $di->setShared('config',  $config = $this->getConfig($configDir, 'common'));
+        $config->merge($this->getConfig($configDir, APP_MODE));
 
-        $config->merge(include $configDir . '/' . APP_MODE . '.php');
-        foreach($config as $section => $options)
+        foreach($initOrder as $section)
         {
             $method = '_init' . ucfirst($section);
             if (method_exists($this, $method))
             {
+                $options = $config->get($section, new Config());
                 call_user_func_array([$this, $method], [$options]);
             }
         }
@@ -32,6 +60,26 @@ trait ApplicationInit
     protected function _initModules(Config $config)
     {
         $di = $this->getDI();
+        $di->setShared('moduleManager', $moduleManager = new Manager());
+        $globalConfig = $di->getShared('config');
+        $namespaces = [];
+        foreach($config as $modulesDir => $moduleList)
+        {
+            foreach($moduleList as $name)
+            {
+                $moduleManager->addModule($modulesDir, $name);
+                $namespaces[$name] = sprintf('%s/%s/src/%2$s', $modulesDir, $name);
+                $moduleConfig = $this->getConfig(sprintf('%s/%s/config', $modulesDir, $name), 'common');
+                $globalConfig->merge($moduleConfig);
+                $moduleConfig = $this->getConfig(sprintf('%s/%s/config', $modulesDir, $name), APP_MODE);
+                $globalConfig->merge($moduleConfig);
+            }
+        }
+        $di->getShared('loader')->registerNamespaces($namespaces, true)->register();
+    }
+
+    protected function _initLoader(Config $config)
+    {
 
     }
 
