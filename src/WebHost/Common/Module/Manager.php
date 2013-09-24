@@ -1,8 +1,8 @@
 <?php
 
-namespace WebHost\Module;
+namespace WebHost\Common\Module;
 
-use WebHost\Behavior\InjectionAware;
+use WebHost\Common\Behavior\InjectionAware;
 
 class Manager
 {
@@ -30,6 +30,10 @@ class Manager
         return $this;
     }
 
+    /**
+     * @param $application
+     * @return $this
+     */
     public function registerModules($application)
     {
         $application->registerModules($this->_modules);

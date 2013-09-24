@@ -1,7 +1,7 @@
 <?php
 use Phalcon\Loader,
     Phalcon\DI\FactoryDefault as DI,
-    WebHost\Application;
+    WebHost\Web\Application;
 
 ini_set('display_errors',1);
 error_reporting(E_ALL);
@@ -17,7 +17,7 @@ try {
     $di->setShared('loader', $loader);
 
     $app = new Application($di);
-    $app->init(__DIR__ . '/../src/WebHost/Resource/config/application.php');
+    $app->init(__DIR__ . '/../config');
 
 
 } catch (\Phalcon\Exception $e) {

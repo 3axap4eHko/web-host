@@ -1,6 +1,6 @@
 <?php
 
-namespace WebHost\Helper;
+namespace WebHost\CLI\Helper;
 
 final class Color
 {

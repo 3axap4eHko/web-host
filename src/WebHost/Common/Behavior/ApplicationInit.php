@@ -1,15 +1,21 @@
 <?php
 
-namespace WebHost\Behavior;
+namespace WebHost\Common\Behavior;
 
 use Phalcon\DI\InjectionAwareInterface;
 use Phalcon\Mvc\Application as PhApplication;
 use Phalcon\DI\FactoryDefault as DI;
 use Phalcon\Config;
-use WebHost\Module\Manager;
+use WebHost\Common\Module\Manager;
 
 trait ApplicationInit
 {
+
+    protected $initOrder = [
+        'modules',
+        'loader',
+        'services'
+    ];
 
     public function getConfig($configDir, $configType, $configExt = '.php')
     {
@@ -20,7 +26,7 @@ trait ApplicationInit
         }
         try
         {
-            return include $configFilename;
+            return new Config(include $configFilename);
         }
         catch (\Exception $e)
         {
@@ -28,24 +34,15 @@ trait ApplicationInit
         }
     }
 
-
     public function init($configDir)
     {
-        $initOrder = [
-            'modules',
-            'loader',
-            'services'
-        ];
-
-
-        define('APP_MODE', strpos(strtolower(PHP_SAPI), 'cli')===false ? 'application' : 'console');
         $configDir = rtrim($configDir,'\\/');
         $di = $this->getDI();
         /** @var Config $config */
-        $di->setShared('config',  $config = $this->getConfig($configDir, 'common'));
-        $config->merge($this->getConfig($configDir, APP_MODE));
+        $di->setShared('config',  $config = $this->getConfig($configDir, 'global.config'));
+        $config->merge($this->getConfig($configDir, 'local.config'));
 
-        foreach($initOrder as $section)
+        foreach($this->initOrder as $section)
         {
             $method = '_init' . ucfirst($section);
             if (method_exists($this, $method))
@@ -55,6 +52,7 @@ trait ApplicationInit
             }
         }
 
+        return $this;
     }
 
     protected function _initModules(Config $config)
@@ -69,9 +67,7 @@ trait ApplicationInit
             {
                 $moduleManager->addModule($modulesDir, $name);
                 $namespaces[$name] = sprintf('%s/%s/src/%2$s', $modulesDir, $name);
-                $moduleConfig = $this->getConfig(sprintf('%s/%s/config', $modulesDir, $name), 'common');
-                $globalConfig->merge($moduleConfig);
-                $moduleConfig = $this->getConfig(sprintf('%s/%s/config', $modulesDir, $name), APP_MODE);
+                $moduleConfig = $this->getConfig(sprintf('%s/%s/config', $modulesDir, $name), 'config');
                 $globalConfig->merge($moduleConfig);
             }
         }
@@ -113,7 +109,8 @@ trait ApplicationInit
             $options = $globalConfig->get($serviceName, new Config());
             $di->set($serviceName, $init($serviceClass, $options));
         }
-
     }
+
+
 
 }

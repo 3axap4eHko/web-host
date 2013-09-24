@@ -1,6 +1,6 @@
 <?php
 
-namespace WebHost\Controller;
+namespace WebHost\Web\Controller;
 
 use Phalcon\Mvc\Controller;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace WebHost\Task;
+namespace WebHost\CLI\Task;
 
 use Phalcon\CLI\Task;
 

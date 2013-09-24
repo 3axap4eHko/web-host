@@ -1,5 +1,5 @@
 <?php
-namespace WebHost\Behavior;
+namespace WebHost\Common\Behavior;
 
 use Phalcon\DiInterface;
 
