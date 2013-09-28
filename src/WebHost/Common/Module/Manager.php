@@ -14,7 +14,7 @@ class Manager
     {
         $this->_modules[$moduleName] =[
             'className' => sprintf('%s\Module', $moduleName),
-            'path'      => sprintf('%s/%s/Module.php', $moduleDir, $moduleName),
+            'path'      => sprintf('%s/%s/Module.php', $moduleDir, str_replace('\\','/',$moduleName)),
         ];
 
         return $this;
@@ -48,7 +48,7 @@ class Manager
         {
             if (array_search($moduleName, $modules) !== false)
             {
-                return $dir . DIRECTORY_SEPARATOR . $moduleName;
+                return $dir . DIRECTORY_SEPARATOR . str_replace('\\','/',$moduleName);
             }
         }
 

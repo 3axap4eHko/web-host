@@ -3,9 +3,11 @@
 namespace WebHost\Common\Behavior;
 
 use Phalcon\DI\InjectionAwareInterface;
+use Phalcon\Events\EventsAwareInterface;
 use Phalcon\Mvc\Application as PhApplication;
 use Phalcon\DI\FactoryDefault as DI;
 use Phalcon\Config;
+use WebHost\CLI\Dispatcher;
 use WebHost\Common\Module\Manager;
 
 trait ApplicationInit
@@ -14,7 +16,8 @@ trait ApplicationInit
     protected $initOrder = [
         'modules',
         'loader',
-        'services'
+        'services',
+        'plugins'
     ];
 
     public function getConfig($configDir, $configType, $configExt = '.php')
@@ -60,40 +63,58 @@ trait ApplicationInit
         $di = $this->getDI();
         $di->setShared('moduleManager', $moduleManager = new Manager());
         $globalConfig = $di->getShared('config');
-        $namespaces = [];
         foreach($config as $modulesDir => $moduleList)
         {
             foreach($moduleList as $name)
             {
                 $moduleManager->addModule($modulesDir, $name);
-                $namespaces[$name] = sprintf('%s/%s/src/%2$s', $modulesDir, $name);
-                $moduleConfig = $this->getConfig(sprintf('%s/%s/config', $modulesDir, $name), 'config');
+                $moduleConfig = $this->getConfig(sprintf('%s/%s/Resource/config', $modulesDir, str_replace('\\','/',$name)), 'config');
                 $globalConfig->merge($moduleConfig);
             }
         }
-        $di->getShared('loader')->registerNamespaces($namespaces, true)->register();
     }
 
     protected function _initLoader(Config $config)
     {
-
+        $di = $this->getDI();
+        $loader = $di->getShared('loader');
+        foreach($config as $namespace => $path)
+        {
+            $loader->registerNamespaces([$namespace => $path], true);
+        }
+        $loader->register();
     }
 
     protected function _initServices(Config $config)
     {
         $di = $this->getDI();
-
-        $di->set('service', $init = function ($className, $arguments = []) use ($di) {
-            return function() use($className, $arguments, $di) {
+        $di->set('service', $init = function ($className, $arguments = []) use ($di)
+            {
+                return function() use($className, $arguments, $di)
+                {
                     if ($arguments instanceof Config) {
                         $arguments = $arguments->toArray();
                     }
+                    if (func_num_args()) {
+                        $arguments = func_get_args();
+                    }
                     try {
-                        $ref      = new \ReflectionClass($className);
-                        $instance = $ref->newInstanceArgs((array)$arguments);
+
+                        if (strpos($className, '::'))
+                        {
+                            $instance = call_user_func_array($className, (array)$arguments);
+                        }else
+                        {
+                            $ref      = new \ReflectionClass($className);
+                            $instance = $ref->newInstanceArgs((array)$arguments);
+                        }
                         if ($instance instanceof InjectionAwareInterface) {
                             $instance->setDI($di);
                         }
+                        if ($instance instanceof EventsAwareInterface) {
+                            $instance->setEventsManager($this->getEventsManager());
+                        }
+
 
                         return $instance;
                     } catch (\Exception $e) {
@@ -102,15 +123,31 @@ trait ApplicationInit
                 };
             }
         );
+
         /** @var Config $globalConfig */
         $globalConfig = $di->getShared('config');
+
         foreach ($config as $serviceName => $serviceClass)
         {
+
             $options = $globalConfig->get($serviceName, new Config());
             $di->set($serviceName, $init($serviceClass, $options));
         }
+
+        $this->setEventsManager($di->get('eventsManager'));
     }
 
-
+    protected function _initPlugins(Config $config)
+    {
+        $eventsManager = $this->getDI()->getShared('eventsManager');
+        foreach($config as $pluginClass => $listeners)
+        {
+            $plugin = new $pluginClass($this->getDI());
+            foreach((array)$listeners as $listener)
+            {
+                $eventsManager->attach($listener, $plugin);
+            }
+        }
+    }
 
 }

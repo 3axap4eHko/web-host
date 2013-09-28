@@ -10,7 +10,7 @@ use Phalcon\Loader,
 
 $loader = new Loader();
 $loader->registerNamespaces([
-        'WebHost' => __DIR__ . '/../src/WebHost'
+        'WebHost' => realpath(__DIR__ . '/../src/WebHost')
     ]);
 $loader->register();
 
@@ -20,12 +20,8 @@ $di->setShared('loader', $loader);
 $app = new Application($di);
 $app->init(__DIR__ . '/../config')->handle($argv);
 
-
-//print PHP_EOL . Color::colorize('WebHost', Color::FG_GREEN, Color::AT_BOLD) . PHP_EOL . PHP_EOL;
-
 function debug()
 {
-    echo '<pre>';
     call_user_func_array('var_dump',func_get_args());
-    die('</pre>');
+    die(PHP_EOL);
 }

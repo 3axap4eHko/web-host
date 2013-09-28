@@ -84,8 +84,7 @@ VIRT_HOST=$(cat <<VIRT_HOST
     <Directory $WEBDIR/public>
         DirectoryIndex index.php
         AllowOverride All
-        Order allow,deny
-        Allow from all
+        Require all Granted
     </Directory>
 
     ErrorLog $LOGDIR/$SERVERNAME.errors
