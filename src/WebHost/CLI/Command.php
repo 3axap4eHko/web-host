@@ -3,6 +3,7 @@
 namespace WebHost\CLI;
 
 use Phalcon\CLI\Task;
+use WebHost\CLI\Behavior\InjectServices;
 
 /**
  * Class Command
@@ -14,13 +15,12 @@ use Phalcon\CLI\Task;
  * @property \Phalcon\Events\Manager                $eventsManager
  * @property \WebHost\Common\Module\Manager         $moduleManager
  *
- * @method \WebHost\CLI\Unit\Apache\VirtualHost createUnitApacheVirtualHost()   createUnitApacheVirtualHost($templatePath)
- * @method \WebHost\CLI\Unit\Setup              createUnitSetup()               createUnitSetup($directory)
- *
  */
 
 abstract class Command extends Task
 {
+    use InjectServices;
+
     /**
      * @param string $module
      * @param string $template
@@ -29,14 +29,6 @@ abstract class Command extends Task
     public function getViewPath($module, $template)
     {
         return $this->getDI()->get('moduleManager')->getModuleDir($module) . '/Resource/views/' . $template;
-    }
-
-    public function __call($method, $arguments)
-    {
-        if (preg_match('/create(Unit\w+)/', $method, $matched))
-        {
-            return $this->getDI()->get(lcfirst($matched[1]), $arguments);
-        }
     }
 
     /**

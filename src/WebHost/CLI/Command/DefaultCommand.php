@@ -5,7 +5,6 @@ namespace WebHost\CLI\Command;
 use WebHost\CLI\Command;
 use Zend\Console\ColorInterface as Color;
 use Zend\Text\Figlet\Figlet;
-use WebHost\Common\Code\Generator\ArrayConfig;
 use Phalcon\Config;
 
 class DefaultCommand extends Command
@@ -13,26 +12,19 @@ class DefaultCommand extends Command
 
     public function setupAction()
     {
-        if (!$this->confirm('This action will setup the application. Are you sure you want to continue? [y/n]', 'y', 'n'))
+        if ($this->confirm('This action will setup the application. Are you sure you want to continue? [y/n]', 'y', 'n'))
         {
-            return;
+            $this->eventsManager->fire('web-host:setup', $this);
         }
-        $fileName = $this->config->configDir . '/local.config.php';
+    }
 
-        $config = new Config(file_exists($fileName) ? include $fileName : []);
-        $config->offsetSet('db', [
-            'host' => $this->inputLine('Mysql connection hostname [localhost]:', true, 100) ? : 'localhost',
-            'username' => $this->inputLine('Mysql connection username [root]:', true, 100) ? : 'root',
-            'password' => $this->inputLine('Mysql connection password []:', true, 100),
-            'dbname' => $this->inputLine('Mysql connection database name [webhost_db]:', true, 100) ? : 'webhost_db',
-        ]);
-
-        $config->offsetSet('web-host', [
-            'webDir' => $this->inputLine('Web-host root directory [/home/www]:', true, 100) ? : '/home/www',
-        ]);
-
-        file_put_contents($fileName, (new ArrayConfig($config->toArray()))->generate());
-        $this->eventsManager->fire('web-host:setup', $this->dispatcher);
+    public function commandsAction()
+    {
+        $commands = current($this->getDI()->getShared('config')->get('router'))->get('commands');
+        foreach($commands as $command => $info)
+        {
+            $this->console->writeLine($command);
+        }
     }
 
     public function helpAction()

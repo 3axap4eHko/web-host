@@ -1,3 +1,3 @@
 #!/bin/bash
-FOO=( a b c )
-echo "${FOO[*]}"
+FOO=(`web-host commands`)
+echo "${#FOO[@]}"

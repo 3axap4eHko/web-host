@@ -12,7 +12,7 @@ WEBHOST_COMPLETE=$(cat <<WEBHOST_COMPLETE
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     # list of web-host commands
-    commands=(apache\:host\:create apache\:host\:list about setup help)
+    commands=(`web-host commands`)
 
     subcommands_1="\${commands[*]}"
 

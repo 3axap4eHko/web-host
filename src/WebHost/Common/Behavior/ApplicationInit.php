@@ -139,13 +139,15 @@ trait ApplicationInit
 
     protected function _initPlugins(Config $config)
     {
+        /** @var \Phalcon\Events\Manager $eventsManager */
         $eventsManager = $this->getDI()->getShared('eventsManager');
+        $priority = 0;
         foreach($config as $pluginClass => $listeners)
         {
             $plugin = new $pluginClass($this->getDI());
             foreach((array)$listeners as $listener)
             {
-                $eventsManager->attach($listener, $plugin);
+                $eventsManager->attach($listener, $plugin, $priority++);
             }
         }
     }

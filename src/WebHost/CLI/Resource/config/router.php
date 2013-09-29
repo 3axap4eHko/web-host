@@ -14,6 +14,10 @@ return [
             'handler' => 'WebHost\CLI\Command\Default::setup',
             'description' => 'Setup web-host',
         ],
+        'commands' => [
+            'handler' => 'WebHost\CLI\Command\Default::commands',
+            'description' => 'Display list of commands',
+        ],
         'help' => [
             'handler' => 'WebHost\CLI\Command\Default::help',
             'description' => 'Display this help',
