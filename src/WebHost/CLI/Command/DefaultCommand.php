@@ -12,7 +12,7 @@ class DefaultCommand extends Command
 
     public function setupAction()
     {
-        if ($this->confirm('This action will setup the application. Are you sure you want to continue? [y/n]', 'y', 'n'))
+        if ($this->inputConfirm('This action will setup the application. Are you sure you want to continue? [y/n]', 'y', 'n'))
         {
             $this->eventsManager->fire('web-host:setup', $this);
         }
@@ -59,5 +59,10 @@ class DefaultCommand extends Command
             usleep(100000);
 
         }
+    }
+
+    public function testAction()
+    {
+        system('ls');
     }
 }

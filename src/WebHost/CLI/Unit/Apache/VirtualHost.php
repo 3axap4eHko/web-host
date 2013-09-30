@@ -8,6 +8,7 @@ use WebHost\Common\Behavior\Renderer;
 class VirtualHost extends AbstractUnit
 {
     use Renderer;
+
     /**
      * @var string
      */
@@ -41,6 +42,8 @@ class VirtualHost extends AbstractUnit
      */
     protected $logDir = '${APACHE_LOG_DIR}';
 
+    protected $comment='';
+
     /**
      * @param string $templatePath
      */
@@ -54,7 +57,6 @@ class VirtualHost extends AbstractUnit
 
     /**
      * @param string $documentRoot
-     *
      * @return $this
      */
     public function setDocumentRoot($documentRoot)
@@ -260,9 +262,32 @@ class VirtualHost extends AbstractUnit
         return $this->serverAliases->getArrayCopy();
     }
 
+    /**
+     * @return bool
+     */
     protected function isValid()
     {
-        return !empty($this->documentRoot);
+        return !empty($this->documentRoot) && !file_exists($this->documentRoot)  && !empty($this->serverName);
     }
+
+    /**
+     * @param string $comment
+     *
+     * @return $this
+     */
+    public function setComment($comment)
+    {
+        $this->comment = $comment;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getComment()
+    {
+        return $this->comment;
+    }
+
 
 }

@@ -3,6 +3,7 @@
 namespace WebHost\CLI\Plugin;
 
 use Phalcon\Config;
+use Phalcon\Events\EventsAwareInterface;
 use WebHost\Common\Plugin\AbstractPlugin;
 use Phalcon\Events\Event;
 use WebHost\Common\Code\Generator\ArrayConfig;
@@ -19,5 +20,10 @@ class DatabasePlugin extends AbstractPlugin
         $config->offsetSet('db', $command->createFormDatabase()->requestFields()->getData());
 
         file_put_contents($fileName, (new ArrayConfig($config->toArray()))->generate());
+    }
+
+    public function hostCreate(Event $event, $target, $serverName)
+    {
+
     }
 }

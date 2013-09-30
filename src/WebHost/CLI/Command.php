@@ -4,7 +4,7 @@ namespace WebHost\CLI;
 
 use Phalcon\CLI\Task;
 use WebHost\CLI\Behavior\InjectServices;
-
+use Zend\Console\ColorInterface as Color;
 /**
  * Class Command
  * @package WebHost\CLI
@@ -63,7 +63,7 @@ abstract class Command extends Task
      *
      * @return mixed
      */
-    public function confirm($text, $yesChar, $noChar)
+    public function inputConfirm($text, $yesChar, $noChar)
     {
         return call_user_func_array('Zend\Console\Prompt\Confirm::prompt', func_get_args());
     }
@@ -76,8 +76,19 @@ abstract class Command extends Task
      *
      * @return mixed
      */
-    public function select($text, $options, $allowEmpty, $echo)
+    public function inputSelect($text, $options, $allowEmpty, $echo)
     {
         return call_user_func_array('Zend\Console\Prompt\Select::prompt', func_get_args());
+    }
+
+    public function overrideFileConfirmation($fileName)
+    {
+        if (file_exists($fileName))
+        {
+            $this->console->writeLine('File "'.$fileName.'" already exists.', Color::LIGHT_RED);
+            return $this->inputConfirm('Are you sure you want to override it? [y/n]', 'y', 'n');
+        }
+
+        return true;
     }
 }

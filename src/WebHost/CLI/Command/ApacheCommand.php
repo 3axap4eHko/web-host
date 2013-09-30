@@ -25,14 +25,38 @@ class ApacheCommand extends Command
         $virtualHost->setEnvVars($arguments->get('env',[]));
         $virtualHost->setScriptAliases($arguments->get('script',[]));
         $virtualHost->setServerAliases($arguments->get('server',[]));
-
+        $virtualHost->setComment($arguments->getCommandLine());
         $fileName = $this->config->get('apache')->directory . '/sites-available/'.$serverName.'.conf';
         try {
+            if (file_exists($fileName))
+            {
+                return $this->console->writeLine('Virtual host already exists!', Color::LIGHT_RED);
+            }
             file_put_contents($fileName, $virtualHost->render());
+            mkdir($virtualHost->getDocumentRoot(), 0775, true);
+            $cmd = 'chown -R ' . implode('.',[$this->config->get('apache')->owner, $this->config->get('apache')->owner]) . ' ' . dirname($virtualHost->getDocumentRoot());
+            system($cmd);
+            if ($arguments->get('enable',true))
+            {
+                system('a2ensite ' . $serverName);
+            }
+            $this->eventsManager->fire('web-host:hostCreate',null, $serverName);
         }
         catch (Exception $e)
         {
             $this->console->writeLine('Virtual host is not configured sufficient!', Color::LIGHT_RED);
+        }
+    }
+
+    public function hostRemoveAction(Arguments $arguments)
+    {
+        $serverName = $arguments->get(0);
+        if ($this->inputConfirm('Virtual Host ' . $serverName . ' will be removed. Are you sure you want to continue? [y/n]', 'y', 'n'))
+        {
+            system('a2dissite ' . $serverName);
+            $fileName = $this->config->get('apache')->directory . '/sites-available/'.$serverName.'.conf';
+            unlink($fileName);
+            $this->eventsManager->fire('web-host:hostRemove',null, $serverName);
         }
     }
 

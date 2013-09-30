@@ -11,9 +11,9 @@ return [
     ],
     'plugins' => [
         'WebHost\CLI\Plugin\Console' => ['dispatch'],
-        'WebHost\CLI\Plugin\DefaultPlugin' => ['web-host'],
-        'WebHost\CLI\Plugin\DatabasePlugin' => ['web-host'],
-        'WebHost\CLI\Plugin\ApachePlugin' => ['web-host'],
+        'WebHost\CLI\Plugin\DefaultPlugin' => ['web-host','dispatch'],
+        'WebHost\CLI\Plugin\DatabasePlugin' => ['web-host','dispatch'],
+        'WebHost\CLI\Plugin\ApachePlugin' => ['web-host','dispatch'],
     ],
     'router' => [include __DIR__ . '/router.php'],
     'services' => [

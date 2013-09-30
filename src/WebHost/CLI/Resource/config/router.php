@@ -2,14 +2,21 @@
 
 return [
     'commands' => [
+        /** Apache Commands */
         'apache:host:create' => [
             'handler' => 'WebHost\CLI\Command\Apache::hostCreate',
+            'description' => 'Create apache virtual host'
+        ],
+        'apache:host:remove' => [
+            'handler' => 'WebHost\CLI\Command\Apache::hostRemove',
             'description' => 'Create apache virtual host'
         ],
         'apache:host:list' => [
             'handler' => 'WebHost\CLI\Command\Apache::hostList',
             'description' => 'Display list apache virtual host'
         ],
+
+        /** Default Commands */
         'setup' => [
             'handler' => 'WebHost\CLI\Command\Default::setup',
             'description' => 'Setup web-host',
@@ -26,5 +33,11 @@ return [
             'handler' => 'WebHost\CLI\Command\Default::about',
             'description' => 'Display about tool',
         ],
+        /** @TODO remove it */
+        'test' => [
+            'handler' => 'WebHost\CLI\Command\Default::test',
+            'description' => 'Test action',
+        ],
+
     ]
 ];
