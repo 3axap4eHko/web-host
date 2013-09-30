@@ -1,4 +1,4 @@
 .idea
 config/local.config.php
-src/Phalcon
-src/Zend
+/src/Phalcon
+/src/Zend
