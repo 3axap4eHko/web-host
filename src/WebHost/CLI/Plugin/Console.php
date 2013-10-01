@@ -11,11 +11,11 @@ class Console extends AbstractPlugin
 {
     public function beforeDispatchLoop(Event $event, Dispatcher $dispatcher)
     {
-        if (!file_exists($this->getDI()->getShared('config')->configDir . '/local.config.php') && $dispatcher->getActionName()!=='setup')
+        if (!file_exists($this->getDI()->getShared('config')->configDir . '/local.config.php') && !($dispatcher->getActiveTask() instanceof \WebHost\CLI\Command\DefaultCommand))
         {
             $console = $this->getDI()->get('console');
             $console->writeLine('Application is not configured!', Color::LIGHT_RED);
-            $console->writeLine('Please execute "web-host setup command"!', Color::LIGHT_RED);
+            $console->writeLine('Please execute "web-host setup" command!', Color::LIGHT_RED);
             $event->stop();
             return false;
         }
