@@ -9,10 +9,7 @@ $filler = str_pad('', strlen($this->getComment()) + 1, '-') . PHP_EOL;
 <VirtualHost <?php echo $this->getListenAddress() ?>:<?php echo $this->getListenPort() ?>>
     ServerName <?php echo $this->getServerName() ?>
     <?php if (count($aliases = $this->getServerAliases())) {
-        echo PHP_EOL . '    ServerAlias';
-        foreach($aliases as $alias) {
-            echo ' ' . $alias;
-        }
+        echo PHP_EOL . '    ServerAlias ' . implode(' ', $aliases);
     }
     ?>
 

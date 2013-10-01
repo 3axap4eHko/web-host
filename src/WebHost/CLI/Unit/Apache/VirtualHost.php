@@ -2,8 +2,10 @@
 
 namespace WebHost\CLI\Unit\Apache;
 
+use WebHost\CLI\Arguments;
 use WebHost\CLI\Unit\AbstractUnit;
 use WebHost\Common\Behavior\Renderer;
+use WebHost\Common\Exception;
 
 class VirtualHost extends AbstractUnit
 {
@@ -41,18 +43,24 @@ class VirtualHost extends AbstractUnit
      * @var string
      */
     protected $logDir = '${APACHE_LOG_DIR}';
-
-    protected $comment='';
-
     /**
-     * @param string $templatePath
+     * @var string
      */
-    public function __construct($templatePath)
+    protected $comment = '';
+
+    public function __construct(Arguments $arguments)
     {
-        $this->serverAliases = new \ArrayObject();
-        $this->scriptAlias = new \ArrayObject();
-        $this->envVars = new \ArrayObject();
-        $this->templatePath = $templatePath;
+        $this->setServerName($arguments->get('serverName'));
+        $this->setDocumentRoot($arguments->get('documentRoot'));
+
+        $this->setServerAliases((array)$arguments->get('server'));
+        $this->setScriptAliases((array)$arguments->get('script'));
+        $this->setEnvVars((array)$arguments->get('env'));
+
+        $this->setListenAddress($arguments->get('listenAddress', $this->getListenAddress()));
+        $this->setListenPort($arguments->get('listenPort', $this->getListenPort()));
+        $this->setLogDir($arguments->get('logDir', $this->getLogDir()));
+        $this->setComment($arguments->get('listenPort', $this->getComment()));
     }
 
     /**
@@ -155,7 +163,7 @@ class VirtualHost extends AbstractUnit
      */
     public function setScriptAliases(array $aliases)
     {
-        $this->scriptAlias->exchangeArray($aliases);
+        $this->scriptAlias = new \ArrayObject($aliases);;
 
         return $this;
     }
@@ -197,7 +205,7 @@ class VirtualHost extends AbstractUnit
      */
     public function setEnvVars(array $envVars)
     {
-        $this->envVars->exchangeArray($envVars);
+        $this->envVars = new \ArrayObject($envVars);
 
         return $this;
     }
@@ -238,7 +246,7 @@ class VirtualHost extends AbstractUnit
      */
     public function setServerAliases(array $aliases)
     {
-        $this->serverAliases->exchangeArray($aliases);
+        $this->serverAliases = new \ArrayObject($aliases);
 
         return $this;
     }
@@ -289,5 +297,32 @@ class VirtualHost extends AbstractUnit
         return $this->comment;
     }
 
+    /**
+     * @throws \WebHost\Common\Exception
+     */
+    public function save($autoEnable = true)
+    {
+        try
+        {
+            $config = $this->getDI()->getShared('config');
+            $fileName = $config->get('apache')->directory . '/sites-available/'.$this->getServerName().'.conf';
+            if (file_exists($fileName))
+            {
+                throw new Exception('Virtual host for '. $this->getServerName().' already exists!');
+            }
+            file_put_contents($fileName, $this->render($this->getViewPath('WebHost\CLI','apache/vhost.php')));
+            mkdir($this->getDocumentRoot(), 0775, true);
+            $cmd = 'chown -R ' . implode('.',array_fill(0,2, $config->get('apache')->owner)) . ' ' . dirname($this->getDocumentRoot());
+            system($cmd);
+            if ($autoEnable)
+            {
+                system('a2ensite ' . $this->getServerName());
+                $this->getEventsManager()->fire('apache:graceful', null);
+            }
+        } catch (Exception $e)
+        {
+            throw new Exception('Virtual host is not configured sufficient!');
+        }
+    }
 
 }

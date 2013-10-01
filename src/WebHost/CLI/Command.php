@@ -22,16 +22,6 @@ abstract class Command extends Task
     use InjectServices;
 
     /**
-     * @param string $module
-     * @param string $template
-     * @return string
-     */
-    public function getViewPath($module, $template)
-    {
-        return $this->getDI()->get('moduleManager')->getModuleDir($module) . '/Resource/views/' . $template;
-    }
-
-    /**
      * @param string $text
      * @param bool $allowEmpty
      * @param int $maxLength
