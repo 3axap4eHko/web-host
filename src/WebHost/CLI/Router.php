@@ -25,13 +25,13 @@ class Router extends PhRouter
         {
             $arguments[1] = 'help';
         }
-
-        $command = $this->commands->get($arguments[1])->get('handler');
+        $route = $this->commands->get($arguments[1]);
+        $command = $route->get('handler');
         list($task, $action) = explode('::', $command);
         return parent::handle([
             'task' => $task,
             'action' => $action,
-            'params' => new Arguments(array_slice($arguments,2))
+            'params' => new Arguments(array_slice($arguments,2), (array)$route->get('map'))
         ]);
     }
 }

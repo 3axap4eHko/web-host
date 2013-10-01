@@ -2,6 +2,8 @@
 
 namespace WebHost\CLI;
 
+use WebHost\Common\Exception;
+
 class Arguments extends \ArrayObject
 {
     /**
@@ -11,13 +13,18 @@ class Arguments extends \ArrayObject
 
     /**
      * @param array|null|object $arguments
+     * @param array $map
+     * @throws Exception if argument not mapped
      */
-    public function __construct($arguments)
+    public function __construct($arguments, array $map = [])
     {
         $this->commandLine = implode(' ', $arguments);
-        foreach($arguments as $argument)
+        foreach($arguments as $idx => $value)
         {
-            if (preg_match('/^--(\w+)\=?(.+)?$/', $argument, $matches))
+            if(!empty($map[$idx]))
+            {
+                $key = $map[$idx];
+            } elseif (preg_match('/^--(\w+)\=?(.+)?$/', $value, $matches))
             {
                 $key = $matches[1];
                 $value = empty($matches[2]) ? true : $matches[2];
@@ -32,12 +39,11 @@ class Arguments extends \ArrayObject
                         }
                     }
                 }
-                $this->set($key, $value);
-            }
-            else
+            } else
             {
-                $this->append($argument);
+                throw new Exception('Not mapped argument #' . $idx . ': ' . $value);
             }
+            $this->set($key, $value);
         }
     }
 

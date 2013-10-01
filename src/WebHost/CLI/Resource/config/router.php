@@ -3,17 +3,21 @@
 return [
     'commands' => [
         /** Apache Commands */
-        'apache:host:create' => [
-            'handler' => 'WebHost\CLI\Command\Apache::hostCreate',
-            'description' => 'Create apache virtual host'
+        'create' => [
+            'handler' => 'WebHost\CLI\Command\Host::create',
+            'description' => 'Create virtual host',
+            'map' => [
+                'serverName',
+                'documentRoot'
+            ]
         ],
-        'apache:host:remove' => [
-            'handler' => 'WebHost\CLI\Command\Apache::hostRemove',
-            'description' => 'Create apache virtual host'
+        'remove' => [
+            'handler' => 'WebHost\CLI\Command\Host::remove',
+            'description' => 'Remove virtual host'
         ],
-        'apache:host:list' => [
-            'handler' => 'WebHost\CLI\Command\Apache::hostList',
-            'description' => 'Display list apache virtual host'
+        'list' => [
+            'handler' => 'WebHost\CLI\Command\Host::list',
+            'description' => 'Display hosts list'
         ],
 
         /** Default Commands */

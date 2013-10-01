@@ -13,7 +13,7 @@ return [
         'WebHost\CLI\Plugin\Console' => ['dispatch'],
         'WebHost\CLI\Plugin\DefaultPlugin' => ['web-host','dispatch'],
         'WebHost\CLI\Plugin\DatabasePlugin' => ['web-host','dispatch'],
-        'WebHost\CLI\Plugin\ApachePlugin' => ['web-host','dispatch'],
+        'WebHost\CLI\Plugin\ApachePlugin' => ['web-host','dispatch', 'apache'],
     ],
     'router' => [include __DIR__ . '/router.php'],
     'services' => [
@@ -24,6 +24,7 @@ return [
 
         'unitSetup' => 'WebHost\CLI\Unit\Setup',
         'unitApacheVirtualHost' => 'WebHost\CLI\Unit\Apache\VirtualHost',
+        'unitHost' => 'WebHost\CLI\Unit\Host',
 
         'formApache' => 'WebHost\CLI\Form\ApacheForm',
         'formWebHost' => 'WebHost\CLI\Form\WebHostForm',
