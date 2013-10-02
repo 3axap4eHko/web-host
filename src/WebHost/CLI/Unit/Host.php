@@ -24,7 +24,7 @@ class Host extends AbstractUnit
 
     public function save()
     {
-        file_put_contents('/etc/hosts', implode(PHP_EOL, $this->hosts));
+        $this->fileWrite('/etc/hosts', implode(PHP_EOL, $this->hosts), true);
 
         return $this;
     }

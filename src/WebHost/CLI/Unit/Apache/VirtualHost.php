@@ -310,7 +310,7 @@ class VirtualHost extends AbstractUnit
             {
                 throw new Exception('Virtual host for '. $this->getServerName().' already exists!');
             }
-            file_put_contents($fileName, $this->render($this->getViewPath('WebHost\CLI','apache/vhost.php')));
+            $this->fileWrite($fileName, $this->render($this->getViewPath('WebHost\CLI','apache/vhost.php')), true);
             mkdir($this->getDocumentRoot(), 0775, true);
             $cmd = 'chown -R ' . implode('.',array_fill(0,2, $config->get('apache')->owner)) . ' ' . dirname($this->getDocumentRoot());
             system($cmd);

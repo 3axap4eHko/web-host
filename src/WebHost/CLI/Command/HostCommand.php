@@ -17,4 +17,9 @@ class HostCommand extends Command
         $host->add($servers);
         $this->eventsManager->fire('web-host:commandCreate',$arguments);
     }
+
+    public function editAction()
+    {
+
+    }
 }

@@ -23,7 +23,10 @@ class DefaultCommand extends Command
         $commands = current($this->getDI()->getShared('config')->get('router'))->get('commands');
         foreach($commands as $command => $info)
         {
-            $this->console->writeLine($command);
+            if (!$info->get('hide', false))
+            {
+                $this->console->writeLine($command);
+            }
         }
     }
 
