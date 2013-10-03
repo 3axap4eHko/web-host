@@ -300,27 +300,24 @@ class VirtualHost extends AbstractUnit
     /**
      * @throws \WebHost\Common\Exception
      */
-    public function save($autoEnable = true)
+    public function save($rewrite = false)
     {
         $config = $this->getDI()->getShared('config');
         $fileName = $config->get('apache')->directory . '/sites-available/'.$this->getServerName().'.conf';
-        if (file_exists($fileName))
+        if (file_exists($fileName) && !$rewrite)
         {
             throw new Exception('Virtual host for '. $this->getServerName().' already exists!');
         }
-        if (is_dir($this->getDocumentRoot()))
-        {
-            throw new Exception('Document root '. $this->getDocumentRoot().'  for '. $this->getServerName().' already exists!');
-        }
         $this->fileWrite($fileName, $this->render($this->getViewPath('WebHost\CLI','apache/vhost.php')), true);
-        mkdir($this->getDocumentRoot(), 0775, true);
+        if (!is_dir($this->getDocumentRoot()))
+        {
+            mkdir($this->getDocumentRoot(), 0775, true);
+        }
+
         $cmd = 'chown -R ' . implode('.',array_fill(0,2, $config->get('apache')->owner)) . ' ' . dirname($this->getDocumentRoot());
         system($cmd);
-        if ($autoEnable)
-        {
-            system('a2ensite ' . $this->getServerName());
-            $this->getEventsManager()->fire('apache:graceful', null);
-        }
+        system('a2ensite ' . $this->getServerName());
+        $this->getEventsManager()->fire('apache:graceful', null);
     }
 
     public function remove()
