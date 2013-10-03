@@ -24,6 +24,11 @@ class ApachePlugin extends AbstractPlugin
         file_put_contents($fileName, (new ArrayConfig($config->toArray()))->generate());
     }
 
+    /**
+     * @param Event $event
+     * @param Arguments $arguments
+     * @example web-host create test.loc test.loc/public --server={www.test.loc\,api.test.loc} --env={APPLICATION_ENV:development} --script={/cgi-bin:/public}
+     */
     public function commandCreate(Event $event, Arguments $arguments)
     {
         $config = $this->getDI()->getShared('config');
@@ -31,6 +36,19 @@ class ApachePlugin extends AbstractPlugin
         $virtualHost->setDocumentRoot($config->get('web-host')->directory . '/' . $virtualHost->getDocumentRoot());
         $virtualHost->setComment($arguments->getCommandLine());
         $virtualHost->save();
+    }
+
+    public function commandRemove(Event $event, Arguments $arguments)
+    {
+        $config = $this->getDI()->getShared('config');
+        $virtualHost = $this->createUnitApacheVirtualHost($arguments);
+        $virtualHost->setDocumentRoot($config->get('web-host')->directory . '/' . $virtualHost->getDocumentRoot());
+        $virtualHost->remove();
+    }
+
+    public function commandList()
+    {
+        system('apache2ctl -t -D DUMP_VHOSTS');
     }
 
     public function graceful(Event $event)

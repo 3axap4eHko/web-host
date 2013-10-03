@@ -1,1 +1,1 @@
-<?php echo $this->hosts ?>
+<?php echo implode(PHP_EOL, $this->hosts);

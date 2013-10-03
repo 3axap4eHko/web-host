@@ -23,7 +23,10 @@ class DefaultCommand extends Command
         $commands = current($this->getDI()->getShared('config')->get('router'))->get('commands');
         foreach($commands as $command => $info)
         {
-            $this->console->writeLine($command);
+            if (!$info->get('hide', false))
+            {
+                $this->console->writeLine($command);
+            }
         }
     }
 
@@ -32,10 +35,13 @@ class DefaultCommand extends Command
         $commands = current($this->getDI()->getShared('config')->get('router'))->get('commands');
         foreach($commands as $command => $info)
         {
-            $description = $info->get('description', ' ');
-            $this->console->write(str_pad($command, 25, ' ' , STR_PAD_LEFT), Color::BLUE);
-            $this->console->write(' - ');
-            $this->console->writeLine($description, Color::YELLOW);
+            if (!$info->get('hide', false))
+            {
+                $description = $info->get('description', ' ');
+                $this->console->write(str_pad($command, 25, ' ' , STR_PAD_LEFT), Color::BLUE);
+                $this->console->write(' - ');
+                $this->console->writeLine($description, Color::YELLOW);
+            }
         }
     }
 

@@ -13,7 +13,10 @@ return [
         ],
         'remove' => [
             'handler' => 'WebHost\CLI\Command\Host::remove',
-            'description' => 'Remove virtual host'
+            'description' => 'Remove virtual host',
+            'map' => [
+                'serverName',
+            ]
         ],
         'list' => [
             'handler' => 'WebHost\CLI\Command\Host::list',
@@ -28,6 +31,7 @@ return [
         'commands' => [
             'handler' => 'WebHost\CLI\Command\Default::commands',
             'description' => 'Display list of commands',
+            'hide' => true
         ],
         'help' => [
             'handler' => 'WebHost\CLI\Command\Default::help',
@@ -41,6 +45,7 @@ return [
         'test' => [
             'handler' => 'WebHost\CLI\Command\Default::test',
             'description' => 'Test action',
+            'hide' => true
         ],
 
     ]
