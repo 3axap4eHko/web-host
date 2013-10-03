@@ -32,7 +32,7 @@ class Host extends AbstractUnit
     public function add(array $hosts, $IPAddress = '127.0.0.1')
     {
         $hosts = implode(' ', $hosts);
-        $record = "$IPAddress\t$hosts";
+        $record = "$IPAddress\t$hosts\n";
         array_unshift($this->hosts, $record);
 
         return $this;

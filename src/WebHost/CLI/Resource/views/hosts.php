@@ -1,1 +1,1 @@
-<?php echo implode(PHP_EOL, $this->hosts);
+<?php echo implode('', $this->hosts);

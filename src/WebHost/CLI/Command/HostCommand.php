@@ -15,6 +15,7 @@ class HostCommand extends Command
         $servers = array_merge([$arguments->get('serverName')],
                                $arguments->get('server',[]));
         $host->add($servers);
+        $host->save();
         $this->eventsManager->fire('web-host:commandCreate',$arguments);
     }
 
