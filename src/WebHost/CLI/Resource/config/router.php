@@ -13,7 +13,10 @@ return [
         ],
         'remove' => [
             'handler' => 'WebHost\CLI\Command\Host::remove',
-            'description' => 'Remove virtual host'
+            'description' => 'Remove virtual host',
+            'map' => [
+                'serverName',
+            ]
         ],
         'list' => [
             'handler' => 'WebHost\CLI\Command\Host::list',

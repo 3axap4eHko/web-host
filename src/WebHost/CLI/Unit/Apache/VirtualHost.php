@@ -302,27 +302,34 @@ class VirtualHost extends AbstractUnit
      */
     public function save($autoEnable = true)
     {
-        try
+        $config = $this->getDI()->getShared('config');
+        $fileName = $config->get('apache')->directory . '/sites-available/'.$this->getServerName().'.conf';
+        if (file_exists($fileName))
         {
-            $config = $this->getDI()->getShared('config');
-            $fileName = $config->get('apache')->directory . '/sites-available/'.$this->getServerName().'.conf';
-            if (file_exists($fileName))
-            {
-                throw new Exception('Virtual host for '. $this->getServerName().' already exists!');
-            }
-            $this->fileWrite($fileName, $this->render($this->getViewPath('WebHost\CLI','apache/vhost.php')), true);
-            mkdir($this->getDocumentRoot(), 0775, true);
-            $cmd = 'chown -R ' . implode('.',array_fill(0,2, $config->get('apache')->owner)) . ' ' . dirname($this->getDocumentRoot());
-            system($cmd);
-            if ($autoEnable)
-            {
-                system('a2ensite ' . $this->getServerName());
-                $this->getEventsManager()->fire('apache:graceful', null);
-            }
-        } catch (Exception $e)
+            throw new Exception('Virtual host for '. $this->getServerName().' already exists!');
+        }
+        if (is_dir($this->getDocumentRoot()))
         {
-            throw new Exception('Virtual host is not configured sufficient!');
+            throw new Exception('Document root '. $this->getDocumentRoot().'  for '. $this->getServerName().' already exists!');
+        }
+        $this->fileWrite($fileName, $this->render($this->getViewPath('WebHost\CLI','apache/vhost.php')), true);
+        mkdir($this->getDocumentRoot(), 0775, true);
+        $cmd = 'chown -R ' . implode('.',array_fill(0,2, $config->get('apache')->owner)) . ' ' . dirname($this->getDocumentRoot());
+        system($cmd);
+        if ($autoEnable)
+        {
+            system('a2ensite ' . $this->getServerName());
+            $this->getEventsManager()->fire('apache:graceful', null);
         }
     }
 
+    public function remove()
+    {
+        system('a2dissite ' . $this->getServerName());
+
+        $config = $this->getDI()->getShared('config');
+        $fileName = $config->get('apache')->directory . '/sites-available/'.$this->getServerName().'.conf';
+        unlink($fileName);
+        $this->getEventsManager()->fire('apache:graceful', null);
+    }
 }

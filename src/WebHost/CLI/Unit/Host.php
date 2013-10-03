@@ -24,7 +24,7 @@ class Host extends AbstractUnit
 
     public function save()
     {
-        $this->fileWrite('/etc/hosts', implode(PHP_EOL, $this->hosts), true);
+        $this->fileWrite('/etc/hosts', $this->render($this->getViewPath('WebHost\CLI','hosts.php')), true);
 
         return $this;
     }
@@ -34,6 +34,16 @@ class Host extends AbstractUnit
         $hosts = implode(' ', $hosts);
         $record = "$IPAddress\t$hosts";
         array_unshift($this->hosts, $record);
+
+        return $this;
+    }
+
+    public function remove($server)
+    {
+        $this->hosts = array_filter($this->hosts, function($value) use ($server)
+            {
+                return strpos($value, $server)!==false;
+            });
 
         return $this;
     }

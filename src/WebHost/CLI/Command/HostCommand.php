@@ -18,8 +18,22 @@ class HostCommand extends Command
         $this->eventsManager->fire('web-host:commandCreate',$arguments);
     }
 
-    public function editAction()
+    public function removeAction(Arguments $arguments)
     {
+        $host = $this->createUnitHost()->load();
+        $host->remove($arguments->get('serverName'));
 
+        $this->eventsManager->fire('web-host:commandRemove',$arguments);
+    }
+
+
+    public function editAction(Arguments $arguments)
+    {
+        $this->eventsManager->fire('web-host:commandEdit',$arguments);
+    }
+
+    public function listAction(Arguments $arguments)
+    {
+        $this->eventsManager->fire('web-host:commandList',$arguments);
     }
 }
