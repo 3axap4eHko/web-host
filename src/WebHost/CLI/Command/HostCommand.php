@@ -30,11 +30,19 @@ class HostCommand extends Command
 
     public function editAction(Arguments $arguments)
     {
+
         $this->eventsManager->fire('web-host:commandEdit',$arguments);
     }
 
     public function listAction(Arguments $arguments)
     {
+
         $this->eventsManager->fire('web-host:commandList',$arguments);
+    }
+
+    public function hostsAction(Arguments $arguments)
+    {
+        echo file_get_contents('/etc/hosts');
+        $this->eventsManager->fire('web-host:commandHost',$arguments);
     }
 }

@@ -5,7 +5,7 @@ WEBHOST_PHP="php `pwd`/web-host.php"
 
 WEBHOST=$(cat <<WEBHOST
 #!/bin/sh
-sudo $WEBHOST_PHP
+$WEBHOST_PHP
 WEBHOST
 )
 

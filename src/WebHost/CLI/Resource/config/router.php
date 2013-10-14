@@ -20,6 +20,10 @@ return [
         ],
         'list' => [
             'handler' => 'WebHost\CLI\Command\Host::list',
+            'description' => 'Display server hosts list'
+        ],
+        'hosts' => [
+            'handler' => 'WebHost\CLI\Command\Host::hosts',
             'description' => 'Display hosts list'
         ],
 
