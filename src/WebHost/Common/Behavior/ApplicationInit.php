@@ -62,6 +62,7 @@ trait ApplicationInit
     {
         $di = $this->getDI();
         $di->setShared('moduleManager', $moduleManager = new Manager());
+        $moduleManager->setDI($di);
         $globalConfig = $di->getShared('config');
         foreach($config as $modulesDir => $moduleList)
         {
